@@ -80,6 +80,7 @@ if (command == "install") {
     
     print("-> Installing binary to ~/.local/bin/trypillia ...");
     OS.exec("mkdir -p ~/.local/bin");
+    OS.exec("rm -f ~/.local/bin/trypillia");
     let installOut = OS.exec("cp /tmp/trypillia_update/build/trypillia ~/.local/bin/trypillia 2>&1");
     if (installOut.isOk && installOut.value != "") {
         print(installOut.value);

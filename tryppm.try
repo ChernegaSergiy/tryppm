@@ -70,7 +70,15 @@ if (command == "install") {
     let cloneOut = OS.exec("git clone https://github.com/ChernegaSergiy/trypillia-language.git /tmp/trypillia_update 2>&1");
     print(cloneOut);
     
-    // Future steps: cmake, make, install
+    print("-> Configuring build with CMake ...");
+    let cmakeOut = OS.exec("cd /tmp/trypillia_update && mkdir -p build && cd build && cmake .. 2>&1");
+    print(cmakeOut);
+    
+    print("-> Compiling Trypillia core (this may take a minute) ...");
+    let makeOut = OS.exec("cd /tmp/trypillia_update/build && make -j4 2>&1");
+    print(makeOut);
+    
+    // Future step: install
 } else {
     print("Unknown command: " + command);
 }

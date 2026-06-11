@@ -144,10 +144,20 @@ if (command == "install") {
     // Wait, Trypillia does not have object literals yet!
     // We should construct it via JSON string concatenation for now!
     
+    // Step 2: Author and entry fields
+    let authorName = "Unknown";
+    // We can try to get git username
+    let gitUser = OS.exec("git config user.name");
+    if (gitUser.isOk && gitUser.value != "") {
+        authorName = String.trim(gitUser.value);
+    }
+    
     let jsonStr = "{\n";
     jsonStr = jsonStr + "  \"name\": \"" + defaultName + "\",\n";
     jsonStr = jsonStr + "  \"version\": \"0.1.0\",\n";
-    jsonStr = jsonStr + "  \"description\": \"\"\n";
+    jsonStr = jsonStr + "  \"description\": \"\",\n";
+    jsonStr = jsonStr + "  \"author\": \"" + authorName + "\",\n";
+    jsonStr = jsonStr + "  \"entry\": \"main.try\"\n";
     jsonStr = jsonStr + "}";
     
     let file = File.open("tryp.json", "w");

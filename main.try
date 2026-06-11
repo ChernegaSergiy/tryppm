@@ -1,0 +1,7 @@
+// Trypillia Package Manager
+// Entry Point
+
+load "src/TrypPM.try";
+
+let pm = TrypPM();
+pm.run(OS.args());

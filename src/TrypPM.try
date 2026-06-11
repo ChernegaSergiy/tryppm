@@ -1,0 +1,42 @@
+load "src/Installer.try";
+load "src/Upgrader.try";
+load "src/Initializer.try";
+
+class TrypPM {
+    fn run(args) {
+        if (List.length(args) < 1) {
+            this.printUsage();
+            OS.exit(1);
+        }
+        
+        let command = args[0];
+        
+        if (command == "install") {
+            let installer = Installer();
+            if (List.length(args) == 1) {
+                installer.installManifest();
+            } else {
+                installer.installPackage(args[1]);
+            }
+        } else if (command == "upgrade") {
+            let upgrader = Upgrader();
+            upgrader.upgradeCore();
+        } else if (command == "init") {
+            let initializer = Initializer();
+            initializer.initManifest();
+        } else {
+            print("Unknown command: " + command);
+            this.printUsage();
+            OS.exit(1);
+        }
+    }
+    
+    fn printUsage() {
+        print("Trypillia Package Manager (TrypPM) v0.1.0\n");
+        print("Usage:");
+        print("  tryppm init                          - Initialize a new tryp.json manifest");
+        print("  tryppm install                       - Install dependencies from tryp.json");
+        print("  tryppm install github:<User>/<Repo>  - Install a specific package");
+        print("  tryppm upgrade                       - Upgrade Trypillia language core");
+    }
+}

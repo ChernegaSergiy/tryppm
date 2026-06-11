@@ -1,0 +1,36 @@
+class Initializer {
+    fn initManifest() {
+        print("Initializing a new Trypillia project...\n");
+        
+        let cwdRes = OS.cwd();
+        let cwdStr = cwdRes.isOk ? cwdRes.value : "project";
+        let dirParts = String.split(cwdStr, "/");
+        let defaultName = dirParts[List.length(dirParts) - 1];
+        
+        let authorName = "Unknown";
+        let gitUser = OS.exec("git config user.name");
+        if (gitUser.isOk && gitUser.value != "") {
+            authorName = String.trim(gitUser.value);
+        }
+        
+        let manifest = {
+            "name": defaultName,
+            "version": "0.1.0",
+            "description": "",
+            "author": authorName,
+            "entry": "main.try",
+            "dependencies": {}
+        };
+        
+        let jsonStr = Json.stringify(manifest, 2);
+        
+        let file = File.open("tryp.json", "w");
+        if (file.isOk) {
+            file.value.write(jsonStr);
+            file.value.close();
+            print("Created tryp.json (Basic fields)");
+        } else {
+            print("Error: Could not create tryp.json");
+        }
+    }
+}

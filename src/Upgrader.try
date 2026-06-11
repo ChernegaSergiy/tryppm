@@ -1,0 +1,32 @@
+class Upgrader {
+    fn upgradeCore() {
+        print("Upgrading Trypillia core from GitHub...");
+        
+        print("-> Cloning repository to /tmp/trypillia_update ...");
+        OS.exec("rm -rf /tmp/trypillia_update");
+        let cloneOut = OS.exec("git clone https://github.com/ChernegaSergiy/trypillia-language.git /tmp/trypillia_update 2>&1");
+        if (cloneOut.isOk && cloneOut.value != "") print(cloneOut.value);
+        
+        print("-> Configuring build with CMake ...");
+        let cmakeOut = OS.exec("cd /tmp/trypillia_update && mkdir -p build && cd build && cmake .. 2>&1");
+        if (cmakeOut.isOk && cmakeOut.value != "") print(cmakeOut.value);
+        
+        print("-> Compiling Trypillia core (this may take a minute) ...");
+        let makeOut = OS.exec("cd /tmp/trypillia_update/build && make -j4 2>&1");
+        if (makeOut.isOk && makeOut.value != "") print(makeOut.value);
+        
+        print("-> Installing binary to ~/.local/bin/trypillia ...");
+        OS.exec("mkdir -p ~/.local/bin");
+        OS.exec("rm -f ~/.local/bin/trypillia");
+        let installOut = OS.exec("cp /tmp/trypillia_update/build/trypillia ~/.local/bin/trypillia 2>&1");
+        if (installOut.isOk && installOut.value != "") {
+            print(installOut.value);
+        }
+        
+        print("-> Cleaning up ...");
+        OS.exec("rm -rf /tmp/trypillia_update");
+        
+        print("\nUpgrade successful! Trypillia is now up to date.");
+        print("Make sure ~/.local/bin is in your PATH.");
+    }
+}

@@ -157,7 +157,9 @@ if (command == "install") {
     jsonStr = jsonStr + "  \"version\": \"0.1.0\",\n";
     jsonStr = jsonStr + "  \"description\": \"\",\n";
     jsonStr = jsonStr + "  \"author\": \"" + authorName + "\",\n";
-    jsonStr = jsonStr + "  \"entry\": \"main.try\"\n";
+    jsonStr = jsonStr + "  \"entry\": \"main.try\",\n";
+    jsonStr = jsonStr + "  \"dependencies\": {\n";
+    jsonStr = jsonStr + "  }\n";
     jsonStr = jsonStr + "}";
     
     let file = File.open("tryp.json", "w");

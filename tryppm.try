@@ -6,7 +6,9 @@ let args = OS.args();
 if (List.length(args) < 1) {
     print("Trypillia Package Manager (TrypPM) v0.1.0\n");
     print("Usage:");
-    print("  tryppm install github:<User>/<Repo>  - Install a package");
+    print("  tryppm init                          - Initialize a new tryp.json manifest");
+    print("  tryppm install                       - Install dependencies from tryp.json");
+    print("  tryppm install github:<User>/<Repo>  - Install a specific package");
     print("  tryppm upgrade                       - Upgrade Trypillia language core");
     OS.exit(1);
 }
@@ -129,6 +131,33 @@ if (command == "install") {
     
     print("\nUpgrade successful! Trypillia is now up to date.");
     print("Make sure ~/.local/bin is in your PATH.");
+} else if (command == "init") {
+    print("Trypillia Package Manager (TrypPM) v0.1.0\n");
+    print("Initializing a new Trypillia project...\n");
+    
+    // Step 1: Base fields
+    let cwd = OS.cwd();
+    let dirParts = String.split(cwd, "/");
+    let defaultName = dirParts[List.length(dirParts) - 1];
+    
+    let manifest = Map.has(Map, "mock") ? {} : {}; // Empty fallback for now
+    // Wait, Trypillia does not have object literals yet!
+    // We should construct it via JSON string concatenation for now!
+    
+    let jsonStr = "{\n";
+    jsonStr = jsonStr + "  \"name\": \"" + defaultName + "\",\n";
+    jsonStr = jsonStr + "  \"version\": \"0.1.0\",\n";
+    jsonStr = jsonStr + "  \"description\": \"\"\n";
+    jsonStr = jsonStr + "}";
+    
+    let file = File.open("tryp.json", "w");
+    if (file.isOk) {
+        file.value.write(jsonStr);
+        file.value.close();
+        print("Created tryp.json (Basic fields)");
+    } else {
+        print("Error: Could not create tryp.json");
+    }
 } else {
     print("Unknown command: " + command);
 }

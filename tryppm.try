@@ -1,0 +1,7 @@
+// tryppm.try - Trypillia Package Manager
+// This script downloads and installs Trypillia libraries from a central repository.
+
+print("Trypillia Package Manager (TrypPM) v0.1.0");
+
+// The main loop or argument parsing will go here.
+// For now, this is just a skeleton.

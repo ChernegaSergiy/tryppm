@@ -1,7 +1,65 @@
 // tryppm.try - Trypillia Package Manager
-// This script downloads and installs Trypillia libraries from a central repository.
+// Usage: trypillia tryppm.try install github:Username/Repo
 
-print("Trypillia Package Manager (TrypPM) v0.1.0");
+print("====================================");
+print(" Trypillia Package Manager (TrypPM) ");
+print("====================================\n");
 
-// The main loop or argument parsing will go here.
-// For now, this is just a skeleton.
+let args = OS.args();
+
+if (List.length(args) < 1) {
+    print("Usage: tryppm install github:<User>/<Repo>");
+    OS.exit(1);
+}
+
+let command = args[0];
+
+if (command == "install") {
+    if (List.length(args) < 2) {
+        print("Error: Package name required.");
+        OS.exit(1);
+    }
+    
+    let pkg = args[1]; // e.g. github:ChernegaSergiy/tryp-logger
+    print("Installing package: " + pkg);
+    
+    let parts = String.split(pkg, ":");
+    if (List.length(parts) < 2 || parts[0] != "github") {
+        print("Error: Only 'github:User/Repo' format is supported right now.");
+        OS.exit(1);
+    }
+    
+    let repoPath = parts[1];
+    let pathParts = String.split(repoPath, "/");
+    if (List.length(pathParts) < 2) {
+        print("Error: Invalid GitHub repository format.");
+        OS.exit(1);
+    }
+    
+    let folderName = pathParts[1];
+    
+    // Default entry point for TrypPM packages is main.try
+    let url = "https://raw.githubusercontent.com/" + repoPath + "/main/main.try";
+    print("Fetching from: " + url + " ...");
+    
+    let response = Http.get(url);
+    if (response.isOk) {
+        OS.exec("mkdir -p tryp_modules");
+        
+        let targetPath = "tryp_modules/" + folderName + ".try";
+        let file = File.open(targetPath, "w");
+        
+        if (file.isOk) {
+            file.value.write(response.value);
+            file.value.close();
+            print("Successfully installed!");
+            print("Now you can use: load \"" + targetPath + "\";");
+        } else {
+            print("Failed to save file.");
+        }
+    } else {
+        print("Failed to download package. Check repository URL or your network connection.");
+    }
+} else {
+    print("Unknown command: " + command);
+}

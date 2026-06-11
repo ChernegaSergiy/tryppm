@@ -5,7 +5,9 @@ let args = OS.args();
 
 if (List.length(args) < 1) {
     print("Trypillia Package Manager (TrypPM) v0.1.0\n");
-    print("Usage: tryppm install github:<User>/<Repo>");
+    print("Usage:");
+    print("  tryppm install github:<User>/<Repo>  - Install a package");
+    print("  tryppm upgrade                       - Upgrade Trypillia language core");
     OS.exit(1);
 }
 
@@ -59,6 +61,10 @@ if (command == "install") {
     } else {
         print("Failed to download package. Check repository URL or your network connection.");
     }
+} else if (command == "upgrade") {
+    print("Trypillia Package Manager (TrypPM) v0.1.0\n");
+    print("Preparing to upgrade Trypillia core...");
+    // Future steps: git clone, cmake, make, install
 } else {
     print("Unknown command: " + command);
 }

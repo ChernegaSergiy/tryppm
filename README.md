@@ -1,10 +1,6 @@
 # TrypPM
 
-The official Package Manager for the Trypillia language.
-
-## Overview
-
-TrypPM handles dependencies, project initialization, and core language upgrades seamlessly. It parses dependencies defined in a `tryp.json` manifest and automatically installs them locally into a `tryp_modules` directory directly from GitHub.
+The official Package Manager for the Trypillia language. TrypPM handles dependencies, project initialization, and core language upgrades seamlessly. It parses dependencies defined in a `tryp.json` manifest and automatically installs them locally into a `tryp_modules` directory directly from GitHub.
 
 ## Commands
 

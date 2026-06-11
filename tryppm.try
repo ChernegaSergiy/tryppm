@@ -157,7 +157,7 @@ if (command == "install") {
         "dependencies": {}
     };
     
-    let jsonStr = Json.stringify(manifest);
+    let jsonStr = Json.stringify(manifest, 2);
     
     let file = File.open("tryp.json", "w");
     if (file.isOk) {

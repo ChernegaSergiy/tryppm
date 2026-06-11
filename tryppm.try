@@ -136,8 +136,9 @@ if (command == "install") {
     print("Initializing a new Trypillia project...\n");
     
     // Step 1: Base fields
-    let cwd = OS.cwd();
-    let dirParts = String.split(cwd, "/");
+    let cwdRes = OS.cwd();
+    let cwdStr = cwdRes.isOk ? cwdRes.value : "project";
+    let dirParts = String.split(cwdStr, "/");
     let defaultName = dirParts[List.length(dirParts) - 1];
     
     // Step 2: Author and entry fields

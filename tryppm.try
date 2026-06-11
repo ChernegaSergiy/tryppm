@@ -13,33 +13,23 @@ if (List.length(args) < 1) {
 
 let command = args[0];
 
-if (command == "install") {
-    if (List.length(args) < 2) {
-        print("Error: Package name required.");
-        OS.exit(1);
-    }
-    
-    let pkg = args[1]; // e.g. github:ChernegaSergiy/tryp-logger
-    
-    print("Trypillia Package Manager (TrypPM) v0.1.0\n");
+fn installPackage(pkg) {
     print("Installing package: " + pkg);
     
     let parts = String.split(pkg, ":");
     if (List.length(parts) < 2 || parts[0] != "github") {
         print("Error: Only 'github:User/Repo' format is supported right now.");
-        OS.exit(1);
+        return false;
     }
     
     let repoPath = parts[1];
     let pathParts = String.split(repoPath, "/");
     if (List.length(pathParts) < 2) {
         print("Error: Invalid GitHub repository format.");
-        OS.exit(1);
+        return false;
     }
     
     let folderName = pathParts[1];
-    
-    // Default entry point for TrypPM packages is main.try
     let url = "https://raw.githubusercontent.com/" + repoPath + "/main/main.try";
     print("Fetching from: " + url + " ...");
     
@@ -53,13 +43,61 @@ if (command == "install") {
         if (file.isOk) {
             file.value.write(response.value);
             file.value.close();
-            print("Successfully installed!");
-            print("Now you can use: load \"" + targetPath + "\";");
+            print("Successfully installed " + folderName + "!");
+            return true;
         } else {
             print("Failed to save file.");
+            return false;
         }
     } else {
         print("Failed to download package. Check repository URL or your network connection.");
+        return false;
+    }
+}
+
+if (command == "install") {
+    if (List.length(args) == 1) {
+        // No arguments: Install from tryp.json
+        print("Looking for tryp.json ...");
+        if (!File.exists("tryp.json")) {
+            print("Error: tryp.json not found in current directory.");
+            OS.exit(1);
+        }
+        
+        let file = File.open("tryp.json", "r");
+        let contentRes = file.value.read();
+        file.value.close();
+        
+        if (!contentRes.isOk) {
+            print("Error reading tryp.json");
+            OS.exit(1);
+        }
+        
+        let content = contentRes.value;
+        let manifest = Json.parse(content);
+        // Wait, does Json.parse return a Map? Yes.
+        // We don't have Map.has yet? We do! Map.has(manifest, "dependencies")
+        if (!Map.has(manifest, "dependencies")) {
+            print("No dependencies found in tryp.json.");
+            OS.exit(0);
+        }
+        
+        let deps = manifest["dependencies"];
+        let keys = Map.keys(deps);
+        let len = List.length(keys);
+        
+        print("Found " + len + " dependencies to install.");
+        for (let i = 0; i < len; i++) {
+            let key = keys[i];
+            let pkgUrl = deps[key];
+            installPackage(pkgUrl);
+        }
+        print("\nAll dependencies installed!");
+        
+    } else {
+        // Install specific package
+        let pkg = args[1]; // e.g. github:ChernegaSergiy/tryp-logger
+        installPackage(pkg);
     }
 } else if (command == "upgrade") {
     print("Trypillia Package Manager (TrypPM) v0.1.0\n");

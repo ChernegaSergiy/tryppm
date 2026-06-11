@@ -78,7 +78,18 @@ if (command == "install") {
     let makeOut = OS.exec("cd /tmp/trypillia_update/build && make -j4 2>&1");
     print(makeOut);
     
-    // Future step: install
+    print("-> Installing binary to ~/.local/bin/trypillia ...");
+    OS.exec("mkdir -p ~/.local/bin");
+    let installOut = OS.exec("cp /tmp/trypillia_update/build/trypillia ~/.local/bin/trypillia 2>&1");
+    if (installOut != "") {
+        print(installOut);
+    }
+    
+    print("-> Cleaning up ...");
+    OS.exec("rm -rf /tmp/trypillia_update");
+    
+    print("\nUpgrade successful! Trypillia is now up to date.");
+    print("Make sure ~/.local/bin is in your PATH.");
 } else {
     print("Unknown command: " + command);
 }

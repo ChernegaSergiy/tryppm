@@ -1,13 +1,10 @@
 // tryppm.try - Trypillia Package Manager
 // Usage: trypillia tryppm.try install github:Username/Repo
 
-print("====================================");
-print(" Trypillia Package Manager (TrypPM) ");
-print("====================================\n");
-
 let args = OS.args();
 
 if (List.length(args) < 1) {
+    print("Trypillia Package Manager (TrypPM) v0.1.0\n");
     print("Usage: tryppm install github:<User>/<Repo>");
     OS.exit(1);
 }
@@ -21,6 +18,8 @@ if (command == "install") {
     }
     
     let pkg = args[1]; // e.g. github:ChernegaSergiy/tryp-logger
+    
+    print("Trypillia Package Manager (TrypPM) v0.1.0\n");
     print("Installing package: " + pkg);
     
     let parts = String.split(pkg, ":");

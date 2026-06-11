@@ -63,8 +63,14 @@ if (command == "install") {
     }
 } else if (command == "upgrade") {
     print("Trypillia Package Manager (TrypPM) v0.1.0\n");
-    print("Preparing to upgrade Trypillia core...");
-    // Future steps: git clone, cmake, make, install
+    print("Upgrading Trypillia core from GitHub...");
+    
+    print("-> Cloning repository to /tmp/trypillia_update ...");
+    OS.exec("rm -rf /tmp/trypillia_update");
+    let cloneOut = OS.exec("git clone https://github.com/ChernegaSergiy/trypillia-language.git /tmp/trypillia_update 2>&1");
+    print(cloneOut);
+    
+    // Future steps: cmake, make, install
 } else {
     print("Unknown command: " + command);
 }

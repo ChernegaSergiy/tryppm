@@ -60,6 +60,17 @@ class Installer {
         let content = contentRes.value;
         let manifest = Json.parse(content);
         
+        let name = Map.has(manifest, "name") ? manifest["name"] : "Unknown";
+        let version = Map.has(manifest, "version") ? manifest["version"] : "0.0.0";
+        let desc = Map.has(manifest, "description") ? manifest["description"] : "";
+        let author = Map.has(manifest, "author") ? manifest["author"] : "Unknown";
+        
+        print("");
+        print("Name: " + name + " v" + version);
+        print("Author: " + author);
+        if (desc != "") { print("Description: " + desc); }
+        print("");
+        
         if (!Map.has(manifest, "dependencies")) {
             print("No dependencies found in tryp.json.");
             OS.exit(0);

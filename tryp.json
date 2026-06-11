@@ -1,0 +1,8 @@
+{
+  "name": "tryppm",
+  "version": "0.1.0",
+  "description": "",
+  "author": "Serhii Cherneha",
+  "entry": "main.try",
+  "dependencies": {}
+}

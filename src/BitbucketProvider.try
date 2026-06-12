@@ -1,53 +1,9 @@
 namespace TrypPM.Providers;
 
-class BitbucketProvider {
+class BitbucketProvider implements SemverTrait {
     fn supports(pkgStr) {
         let parts = String.split(pkgStr, ":");
         return List.length(parts) > 0 && parts[0] == "bitbucket";
-    }
-
-    fn extractSemver(tagStr) {
-        let s = tagStr;
-        if (String.startsWith(s, "v")) { s = String.substring(s, 1, String.length(s) - 1); }
-        let parts = String.split(s, ".");
-        let maj = 0; let min = 0; let pat = 0;
-        if (List.length(parts) > 0) { let m = String.toNumber(parts[0]); if (m != nil) { maj = m; } }
-        if (List.length(parts) > 1) { let m = String.toNumber(parts[1]); if (m != nil) { min = m; } }
-        if (List.length(parts) > 2) { let m = String.toNumber(parts[2]); if (m != nil) { pat = m; } }
-        return [maj, min, pat];
-    }
-    
-    fn satisfies(tagStr, constraint) {
-        let tagVer = this.extractSemver(tagStr);
-        let consStr = constraint;
-        let isCaret = false;
-        let isTilde = false;
-        if (String.startsWith(consStr, "^")) {
-            isCaret = true; consStr = String.substring(consStr, 1, String.length(consStr) - 1);
-        } else if (String.startsWith(consStr, "~")) {
-            isTilde = true; consStr = String.substring(consStr, 1, String.length(consStr) - 1);
-        }
-        let consVer = this.extractSemver(consStr);
-        if (isCaret) {
-            if (tagVer[0] != consVer[0]) { return false; }
-            if (tagVer[1] < consVer[1]) { return false; }
-            if (tagVer[1] == consVer[1] && tagVer[2] < consVer[2]) { return false; }
-            return true;
-        } else if (isTilde) {
-            if (tagVer[0] != consVer[0] || tagVer[1] != consVer[1]) { return false; }
-            if (tagVer[2] < consVer[2]) { return false; }
-            return true;
-        } else {
-            return tagVer[0] == consVer[0] && tagVer[1] == consVer[1] && tagVer[2] == consVer[2];
-        }
-    }
-    
-    fn compareSemver(tagA, tagB) {
-        let verA = this.extractSemver(tagA);
-        let verB = this.extractSemver(tagB);
-        if (verA[0] != verB[0]) { return verA[0] - verB[0]; }
-        if (verA[1] != verB[1]) { return verA[1] - verB[1]; }
-        return verA[2] - verB[2];
     }
 
     fn resolveVersion(pkgStr, requestedVersion) {

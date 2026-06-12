@@ -1,6 +1,7 @@
 namespace TrypPM.Core;
 
 load "Provider.try";
+load "SemverTrait.try";
 load "GitHubProvider.try";
 load "GitLabProvider.try";
 load "BitbucketProvider.try";

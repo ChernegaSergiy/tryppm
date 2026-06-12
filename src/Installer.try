@@ -117,7 +117,7 @@ class Installer {
             }
             return true;
         }
-        Map.set(installedMap, basePkg, branch);
+        installedMap[basePkg] = branch;
 
         let pathParts = String.split(repoPath, "/");
         if (List.length(pathParts) < 2) {
@@ -182,7 +182,8 @@ class Installer {
             }
             return true;
         }
-        Map.set(installedMap, basePkg, "LOCAL");
+        installedMap[basePkg] = "LOCAL";
+        
         let pathParts = String.split(repoPath, "/");
         if (List.length(pathParts) < 2) { return false; }
         

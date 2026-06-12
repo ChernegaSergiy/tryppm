@@ -306,7 +306,7 @@ class Installer {
                 let pathParts = String.split(repoPath, "/");
                 if (List.length(pathParts) > 1) {
                     let folderName = pathParts[1];
-                    content = content + "load \"tryp_modules/" + folderName + "/main.try\";\n";
+                    content = content + "load \"" + folderName + "/main.try\";\n";
                 }
             }
         }

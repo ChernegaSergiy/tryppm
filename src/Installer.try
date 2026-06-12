@@ -1,219 +1,79 @@
 namespace TrypPM.Core;
 
-class Installer {
-    fn extractSemver(tagStr) {
-        let s = tagStr;
-        if (String.startsWith(s, "v")) { s = String.substring(s, 1, String.length(s) - 1); }
-        let parts = String.split(s, ".");
-        let maj = 0; let min = 0; let pat = 0;
-        if (List.length(parts) > 0) { let m = String.toNumber(parts[0]); if (m != nil) { maj = m; } }
-        if (List.length(parts) > 1) { let m = String.toNumber(parts[1]); if (m != nil) { min = m; } }
-        if (List.length(parts) > 2) { let m = String.toNumber(parts[2]); if (m != nil) { pat = m; } }
-        return [maj, min, pat];
-    }
-    
-    fn satisfies(tagStr, constraint) {
-        let tagVer = this.extractSemver(tagStr);
-        let consStr = constraint;
-        let isCaret = false;
-        let isTilde = false;
-        if (String.startsWith(consStr, "^")) {
-            isCaret = true; consStr = String.substring(consStr, 1, String.length(consStr) - 1);
-        } else if (String.startsWith(consStr, "~")) {
-            isTilde = true; consStr = String.substring(consStr, 1, String.length(consStr) - 1);
-        }
-        let consVer = this.extractSemver(consStr);
-        if (isCaret) {
-            if (tagVer[0] != consVer[0]) { return false; }
-            if (tagVer[1] < consVer[1]) { return false; }
-            if (tagVer[1] == consVer[1] && tagVer[2] < consVer[2]) { return false; }
-            return true;
-        } else if (isTilde) {
-            if (tagVer[0] != consVer[0] || tagVer[1] != consVer[1]) { return false; }
-            if (tagVer[2] < consVer[2]) { return false; }
-            return true;
-        } else {
-            return tagVer[0] == consVer[0] && tagVer[1] == consVer[1] && tagVer[2] == consVer[2];
-        }
-    }
-    
-    fn compareSemver(tagA, tagB) {
-        let verA = this.extractSemver(tagA);
-        let verB = this.extractSemver(tagB);
-        if (verA[0] != verB[0]) { return verA[0] - verB[0]; }
-        if (verA[1] != verB[1]) { return verA[1] - verB[1]; }
-        return verA[2] - verB[2];
-    }
+load "src/Provider.try";
+load "src/GitHubProvider.try";
+load "src/LocalProvider.try";
 
-    fn resolveVersion(repoPath, constraint) {
-        if (constraint == "latest" || constraint == "*") {
-            let res = OS.exec("curl -s -A 'TrypPM' https://api.github.com/repos/" + repoPath + "/releases/latest");
-            if (res.isOk && res.value != "") {
-                let json = Json.parse(res.value);
-                if (Map.has(json, "tag_name")) { return json["tag_name"]; }
-            }
-            return "main";
-        }
-        
-        if (String.startsWith(constraint, "^") || String.startsWith(constraint, "~")) {
-            let res = OS.exec("curl -s -A 'TrypPM' https://api.github.com/repos/" + repoPath + "/tags");
-            if (res.isOk && res.value != "") {
-                let tags = Json.parse(res.value);
-                let bestTag = "";
-                let len = List.length(tags);
-                for (let i = 0; i < len; i++) {
-                    let tag = tags[i];
-                    if (Map.has(tag, "name")) {
-                        let tagName = tag["name"];
-                        if (this.satisfies(tagName, constraint)) {
-                            if (bestTag == "") {
-                                bestTag = tagName;
-                            } else {
-                                if (this.compareSemver(tagName, bestTag) > 0) {
-                                    bestTag = tagName;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (bestTag != "") { return bestTag; }
-            }
-        }
-        return constraint;
+use TrypPM.Providers.GitHubProvider;
+use TrypPM.Providers.LocalProvider;
+
+class Installer {
+    fn getProviders() {
+        return [
+            GitHubProvider(),
+            LocalProvider()
+        ];
     }
 
     fn installPackage(pkg) {
         let replaceMap = {};
         let installedMap = {};
-        let res = this._installPackage(pkg, replaceMap, installedMap);
+        
+        let pkgStr = pkg;
+        let version = "*";
+        
+        let parts = String.split(pkg, "@");
+        if (List.length(parts) > 1) {
+            pkgStr = parts[0];
+            version = parts[1];
+        }
+
+        let res = this._installWithProviders(pkgStr, version, replaceMap, installedMap);
         if (res) {
             this.generateAutoloader(installedMap);
         }
         return res;
     }
 
-    fn _installPackage(pkg, replaceMap, installedMap) {
-        print("Installing package: " + pkg);
+    fn _installWithProviders(pkgStr, requestedVersion, replaceMap, installedMap) {
+        let providers = this.getProviders();
+        let len = List.length(providers);
         
-        let parts = String.split(pkg, ":");
-        if (List.length(parts) < 2 || parts[0] != "github") {
-            print("Error: Only 'github:User/Repo[@version]' format is supported right now.");
+        let provider = nil;
+        let found = false;
+        for (let i = 0; i < len; i++) {
+            let p = providers[i];
+            if (p.supports(pkgStr)) {
+                provider = p;
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            print("Error: No provider found to handle package format '" + pkgStr + "'");
             return false;
         }
-        
-        let repoPath = parts[1];
-        let branch = "main";
-        
-        let versionParts = String.split(repoPath, "@");
-        if (List.length(versionParts) > 1) {
-            repoPath = versionParts[0];
-            branch = versionParts[1];
-        }
-        
-        let basePkg = "github:" + repoPath;
-        branch = this.resolveVersion(repoPath, branch);
 
+        let resolvedVersion = provider.resolveVersion(pkgStr, requestedVersion);
+        let basePkg = pkgStr;
+        
         if (Map.has(installedMap, basePkg)) {
             let existingVersion = installedMap[basePkg];
-            if (existingVersion != branch) {
+            if (existingVersion != resolvedVersion) {
                 print("Error: Version conflict for " + basePkg + "!");
                 print("Already resolved: " + existingVersion);
-                print("Requested now: " + branch);
+                print("Requested now: " + resolvedVersion);
                 OS.exit(1);
             }
             return true;
         }
-        Map.set(installedMap, basePkg, branch);
-
-        let pathParts = String.split(repoPath, "/");
-        if (List.length(pathParts) < 2) {
-            print("Error: Invalid GitHub repository format.");
-            return false;
-        }
+        Map.set(installedMap, basePkg, resolvedVersion);
         
-        let folderName = pathParts[1];
         OS.exec("mkdir -p tryp_modules");
-        let targetDir = "tryp_modules/" + folderName;
-        // Remove target dir if it exists
-        OS.exec("rm -rf " + targetDir);
+        let targetDir = "tryp_modules";
         
-        let cloneUrl = "https://github.com/" + repoPath + ".git";
-        print("Cloning from: " + cloneUrl + " (branch: " + branch + ") ...");
-        
-        let res = OS.exec("git clone --depth 1 --branch " + branch + " " + cloneUrl + " " + targetDir);
-        if (res.isOk) {
-            print("Successfully installed " + folderName + "!");
-            
-            let localManifest = targetDir + "/tryp.json";
-            if (File.exists(localManifest)) {
-                let f = File.open(localManifest, "r");
-                let cRes = f.value.read();
-                f.value.close();
-                if (cRes.isOk) {
-                    let pkgManifest = Json.parse(cRes.value);
-                    if (Map.has(pkgManifest, "dependencies")) {
-                        this.installDeps(pkgManifest["dependencies"], replaceMap, installedMap);
-                    }
-                }
-            }
-            return true;
-        } else {
-            print("Failed to download package. Check repository URL or your network connection.");
-            return false;
-        }
-    }
-
-    fn installLocalPackage(pkg, localPath, replaceMap, installedMap) {
-        print("Installing package: " + pkg + " (LOCAL OVERRIDE)");
-        let parts = String.split(pkg, ":");
-        if (List.length(parts) < 2) { return false; }
-        
-        let repoPath = parts[1];
-        let versionParts = String.split(repoPath, "@");
-        if (List.length(versionParts) > 1) {
-            repoPath = versionParts[0];
-        }
-        let basePkg = "github:" + repoPath;
-
-        if (Map.has(installedMap, basePkg)) {
-            let existingVersion = installedMap[basePkg];
-            if (existingVersion != "LOCAL") {
-                print("Error: Version conflict for " + basePkg + "!");
-                print("Already resolved: " + existingVersion);
-                print("Requested now: LOCAL OVERRIDE");
-                OS.exit(1);
-            }
-            return true;
-        }
-        Map.set(installedMap, basePkg, "LOCAL");
-        
-        let pathParts = String.split(repoPath, "/");
-        if (List.length(pathParts) < 2) { return false; }
-        
-        let folderName = pathParts[1];
-        print("Copying from local path: " + localPath + " ...");
-        OS.exec("mkdir -p tryp_modules");
-        let res = OS.exec("cp -r " + localPath + " tryp_modules/" + folderName);
-        if (res.isOk) {
-            print("Successfully installed " + folderName + " from local path!");
-            
-            let localManifest = localPath + "/tryp.json";
-            if (File.exists(localManifest)) {
-                let f = File.open(localManifest, "r");
-                let cRes = f.value.read();
-                f.value.close();
-                if (cRes.isOk) {
-                    let pkgManifest = Json.parse(cRes.value);
-                    if (Map.has(pkgManifest, "dependencies")) {
-                        this.installDeps(pkgManifest["dependencies"], replaceMap, installedMap);
-                    }
-                }
-            }
-            return true;
-        } else {
-            print("Error: Could not copy local package from " + localPath);
-            return false;
-        }
+        return provider.install(pkgStr, resolvedVersion, targetDir, replaceMap, installedMap, this);
     }
 
     fn installDeps(deps, replaceMap, installedMap) {
@@ -224,21 +84,13 @@ class Installer {
             let key = keys[i];
             let val = deps[key];
             
-            let keyParts = String.split(key, ":");
-            if (List.length(keyParts) > 1 && keyParts[0] == "github") {
-                let pkgStr = key;
-                if (val != "latest" && val != "*") {
-                    pkgStr = key + "@" + val;
-                }
-                
-                if (Map.has(replaceMap, key)) {
-                    this.installLocalPackage(pkgStr, replaceMap[key], replaceMap, installedMap);
-                } else {
-                    this._installPackage(pkgStr, replaceMap, installedMap);
-                }
-            } else {
-                print("Error: Unsupported dependency format '" + key + "'. Use 'github:User/Repo': 'version'.");
+            let pkgStr = key;
+            if (Map.has(replaceMap, key)) {
+                pkgStr = "local:" + replaceMap[key];
+                val = "LOCAL";
             }
+            
+            this._installWithProviders(pkgStr, val, replaceMap, installedMap);
         }
     }
 
@@ -302,10 +154,20 @@ class Installer {
             let key = keys[i];
             let parts = String.split(key, ":");
             if (List.length(parts) > 1) {
-                let repoPath = parts[1];
-                let pathParts = String.split(repoPath, "/");
-                if (List.length(pathParts) > 1) {
-                    let folderName = pathParts[1];
+                if (parts[0] == "github") {
+                    let repoPath = parts[1];
+                    let pathParts = String.split(repoPath, "/");
+                    if (List.length(pathParts) > 1) {
+                        let folderName = pathParts[1];
+                        content = content + "load \"" + folderName + "/main.try\";\n";
+                    }
+                } else if (parts[0] == "local") {
+                    let localPath = parts[1];
+                    let pathParts = String.split(localPath, "/");
+                    let folderName = pathParts[List.length(pathParts) - 1];
+                    if (folderName == "") {
+                        folderName = pathParts[List.length(pathParts) - 2];
+                    }
                     content = content + "load \"" + folderName + "/main.try\";\n";
                 }
             }

@@ -81,6 +81,12 @@ class Installer {
     }
 
     fn installPackage(pkg) {
+        let replaceMap = {};
+        let installedMap = {};
+        return this._installPackage(pkg, replaceMap, installedMap);
+    }
+
+    fn _installPackage(pkg, replaceMap, installedMap) {
         print("Installing package: " + pkg);
         
         let parts = String.split(pkg, ":");
@@ -121,6 +127,15 @@ class Installer {
                 file.value.write(response.value);
                 file.value.close();
                 print("Successfully installed " + folderName + "!");
+                
+                let manifestUrl = "https://raw.githubusercontent.com/" + repoPath + "/" + branch + "/tryp.json";
+                let manifestRes = Http.get(manifestUrl);
+                if (manifestRes.isOk && manifestRes.value != "404: Not Found") {
+                    let pkgManifest = Json.parse(manifestRes.value);
+                    if (Map.has(pkgManifest, "dependencies")) {
+                        this.installDeps(pkgManifest["dependencies"], replaceMap, installedMap);
+                    }
+                }
                 return true;
             } else {
                 print("Failed to save file.");
@@ -132,7 +147,7 @@ class Installer {
         }
     }
 
-    fn installLocalPackage(pkg, localPath) {
+    fn installLocalPackage(pkg, localPath, replaceMap, installedMap) {
         print("Installing package: " + pkg + " (LOCAL OVERRIDE)");
         let parts = String.split(pkg, ":");
         if (List.length(parts) < 2) { return false; }
@@ -149,10 +164,53 @@ class Installer {
         let res = OS.exec("cp " + sourceFile + " tryp_modules/" + folderName + ".try");
         if (res.isOk) {
             print("Successfully installed " + folderName + " from local path!");
+            
+            let localManifest = localPath + "/tryp.json";
+            if (File.exists(localManifest)) {
+                let f = File.open(localManifest, "r");
+                let cRes = f.value.read();
+                f.value.close();
+                if (cRes.isOk) {
+                    let pkgManifest = Json.parse(cRes.value);
+                    if (Map.has(pkgManifest, "dependencies")) {
+                        this.installDeps(pkgManifest["dependencies"], replaceMap, installedMap);
+                    }
+                }
+            }
             return true;
         } else {
             print("Error: Could not copy local package from " + sourceFile);
             return false;
+        }
+    }
+
+    fn installDeps(deps, replaceMap, installedMap) {
+        let keys = Map.keys(deps);
+        let len = List.length(keys);
+        
+        for (let i = 0; i < len; i++) {
+            let key = keys[i];
+            let val = deps[key];
+            
+            let keyParts = String.split(key, ":");
+            if (List.length(keyParts) > 1 && keyParts[0] == "github") {
+                if (!Map.has(installedMap, key)) {
+                    Map.set(installedMap, key, true);
+                    
+                    let pkgStr = key;
+                    if (val != "latest" && val != "*") {
+                        pkgStr = key + "@" + val;
+                    }
+                    
+                    if (Map.has(replaceMap, key)) {
+                        this.installLocalPackage(pkgStr, replaceMap[key], replaceMap, installedMap);
+                    } else {
+                        this._installPackage(pkgStr, replaceMap, installedMap);
+                    }
+                }
+            } else {
+                print("Error: Unsupported dependency format '" + key + "'. Use 'github:User/Repo': 'version'.");
+            }
         }
     }
 
@@ -192,34 +250,16 @@ class Installer {
         }
         
         let deps = manifest["dependencies"];
-        let keys = Map.keys(deps);
-        let len = List.length(keys);
         let replaceMap = {};
         if (Map.has(manifest, "replace")) {
             replaceMap = manifest["replace"];
             print("Found local overrides in 'replace' block.");
         }
+        let installedMap = {};
         
-        print("Found " + len + " dependencies to install.");
-        for (let i = 0; i < len; i++) {
-            let key = keys[i];
-            let val = deps[key];
-            
-            let keyParts = String.split(key, ":");
-            if (List.length(keyParts) > 1 && keyParts[0] == "github") {
-                if (Map.has(replaceMap, key)) {
-                    this.installLocalPackage(key, replaceMap[key]);
-                } else {
-                    if (val == "latest" || val == "*") {
-                        this.installPackage(key);
-                    } else {
-                        this.installPackage(key + "@" + val);
-                    }
-                }
-            } else {
-                print("Error: Unsupported dependency format '" + key + "'. Use 'github:User/Repo': 'version'.");
-            }
-        }
+        print("Starting dependency installation...");
+        this.installDeps(deps, replaceMap, installedMap);
+        
         print("\nAll dependencies installed!");
     }
 }

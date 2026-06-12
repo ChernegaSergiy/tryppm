@@ -1,6 +1,6 @@
 {
   "name": "tryppm",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "The official package manager for the Trypillia language.",
   "author": "Serhii Cherneha",
   "entry": "main.try",

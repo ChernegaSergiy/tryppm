@@ -145,6 +145,7 @@ class Installer {
         let sourceFile = localPath + "/main.try";
         
         print("Copying from local path: " + sourceFile + " ...");
+        OS.exec("mkdir -p tryp_modules");
         let res = OS.exec("cp " + sourceFile + " tryp_modules/" + folderName + ".try");
         if (res.isOk) {
             print("Successfully installed " + folderName + " from local path!");

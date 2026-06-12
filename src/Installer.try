@@ -1,8 +1,8 @@
 namespace TrypPM.Core;
 
-load "src/Provider.try";
-load "src/GitHubProvider.try";
-load "src/LocalProvider.try";
+load "Provider.try";
+load "GitHubProvider.try";
+load "LocalProvider.try";
 
 use TrypPM.Providers.GitHubProvider;
 use TrypPM.Providers.LocalProvider;

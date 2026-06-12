@@ -132,6 +132,29 @@ class Installer {
         }
     }
 
+    fn installLocalPackage(pkg, localPath) {
+        print("Installing package: " + pkg + " (LOCAL OVERRIDE)");
+        let parts = String.split(pkg, ":");
+        if (List.length(parts) < 2) { return false; }
+        
+        let repoPath = parts[1];
+        let pathParts = String.split(repoPath, "/");
+        if (List.length(pathParts) < 2) { return false; }
+        
+        let folderName = pathParts[1];
+        let sourceFile = localPath + "/main.try";
+        
+        print("Copying from local path: " + sourceFile + " ...");
+        let res = OS.exec("cp " + sourceFile + " tryp_modules/" + folderName + ".try");
+        if (res.isOk) {
+            print("Successfully installed " + folderName + " from local path!");
+            return true;
+        } else {
+            print("Error: Could not copy local package from " + sourceFile);
+            return false;
+        }
+    }
+
     fn installManifest() {
         print("Looking for tryp.json ...");
         if (!File.exists("tryp.json")) {
@@ -170,6 +193,11 @@ class Installer {
         let deps = manifest["dependencies"];
         let keys = Map.keys(deps);
         let len = List.length(keys);
+        let replaceMap = {};
+        if (Map.has(manifest, "replace")) {
+            replaceMap = manifest["replace"];
+            print("Found local overrides in 'replace' block.");
+        }
         
         print("Found " + len + " dependencies to install.");
         for (let i = 0; i < len; i++) {
@@ -178,10 +206,14 @@ class Installer {
             
             let keyParts = String.split(key, ":");
             if (List.length(keyParts) > 1 && keyParts[0] == "github") {
-                if (val == "latest" || val == "*") {
-                    this.installPackage(key);
+                if (Map.has(replaceMap, key)) {
+                    this.installLocalPackage(key, replaceMap[key]);
                 } else {
-                    this.installPackage(key + "@" + val);
+                    if (val == "latest" || val == "*") {
+                        this.installPackage(key);
+                    } else {
+                        this.installPackage(key + "@" + val);
+                    }
                 }
             } else {
                 print("Error: Unsupported dependency format '" + key + "'. Use 'github:User/Repo': 'version'.");

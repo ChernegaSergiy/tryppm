@@ -1,3 +1,5 @@
+namespace TrypPM.Core;
+
 load "src/Installer.try";
 load "src/Upgrader.try";
 load "src/Initializer.try";

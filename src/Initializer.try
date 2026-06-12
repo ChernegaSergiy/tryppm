@@ -1,3 +1,5 @@
+namespace TrypPM.Core;
+
 class Initializer {
     fn initManifest() {
         print("Initializing a new Trypillia project...\n");

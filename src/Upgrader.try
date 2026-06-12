@@ -1,3 +1,5 @@
+namespace TrypPM.Core;
+
 class Upgrader {
     fn upgradeCore() {
         print("Upgrading Trypillia core from GitHub...");

@@ -2,6 +2,7 @@
 // Entry Point
 
 load "src/TrypPM.try";
+use TrypPM.Core.TrypPM;
 
 let pm = TrypPM();
 pm.run(OS.args());

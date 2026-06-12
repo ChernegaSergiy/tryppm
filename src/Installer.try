@@ -4,11 +4,19 @@ class Installer {
         
         let parts = String.split(pkg, ":");
         if (List.length(parts) < 2 || parts[0] != "github") {
-            print("Error: Only 'github:User/Repo' format is supported right now.");
+            print("Error: Only 'github:User/Repo[@version]' format is supported right now.");
             return false;
         }
         
         let repoPath = parts[1];
+        let branch = "main";
+        
+        let versionParts = String.split(repoPath, "@");
+        if (List.length(versionParts) > 1) {
+            repoPath = versionParts[0];
+            branch = versionParts[1];
+        }
+
         let pathParts = String.split(repoPath, "/");
         if (List.length(pathParts) < 2) {
             print("Error: Invalid GitHub repository format.");
@@ -16,7 +24,7 @@ class Installer {
         }
         
         let folderName = pathParts[1];
-        let url = "https://raw.githubusercontent.com/" + repoPath + "/main/main.try";
+        let url = "https://raw.githubusercontent.com/" + repoPath + "/" + branch + "/main.try";
         print("Fetching from: " + url + " ...");
         
         let response = Http.get(url);

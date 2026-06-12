@@ -1,8 +1,8 @@
 namespace TrypPM.Core;
 
-load "src/Installer.try";
-load "src/Upgrader.try";
-load "src/Initializer.try";
+load "Installer.try";
+load "Upgrader.try";
+load "Initializer.try";
 
 class TrypPM {
     fn run(args) {

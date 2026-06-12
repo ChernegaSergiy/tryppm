@@ -91,8 +91,20 @@ class Installer {
         print("Found " + len + " dependencies to install.");
         for (let i = 0; i < len; i++) {
             let key = keys[i];
-            let pkgUrl = deps[key];
-            this.installPackage(pkgUrl);
+            let val = deps[key];
+            
+            let keyParts = String.split(key, ":");
+            if (List.length(keyParts) > 1 && keyParts[0] == "github") {
+                // Format: "github:User/Repo": "v1.0.0"
+                if (val == "latest" || val == "*") {
+                    this.installPackage(key);
+                } else {
+                    this.installPackage(key + "@" + val);
+                }
+            } else {
+                // Legacy format: "tryp-logger": "github:User/Repo@v1.0.0"
+                this.installPackage(val);
+            }
         }
         print("\nAll dependencies installed!");
     }

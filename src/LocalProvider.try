@@ -1,0 +1,52 @@
+namespace TrypPM.Providers;
+
+class LocalProvider {
+    fn supports(pkgStr) {
+        let parts = String.split(pkgStr, ":");
+        return List.length(parts) > 0 && parts[0] == "local";
+    }
+
+    fn resolveVersion(pkgStr, requestedVersion) {
+        // Local files don't have versions, they just use "LOCAL" state
+        return "LOCAL";
+    }
+
+    fn install(pkgStr, version, targetDir, replaceMap, installedMap, installer) {
+        let parts = String.split(pkgStr, ":");
+        if (List.length(parts) < 2) { return false; }
+        
+        let localPath = parts[1];
+        let pathParts = String.split(localPath, "/");
+        if (List.length(pathParts) == 0) { return false; }
+        let folderName = pathParts[List.length(pathParts) - 1];
+        if (folderName == "") {
+            folderName = pathParts[List.length(pathParts) - 2];
+        }
+        
+        print("Copying from local path: " + localPath + " ...");
+        let dest = targetDir + "/" + folderName;
+        OS.exec("rm -rf " + dest);
+        
+        let res = OS.exec("cp -r " + localPath + " " + dest);
+        if (res.isOk) {
+            print("Successfully installed " + folderName + " from local path!");
+            
+            let localManifest = localPath + "/tryp.json";
+            if (File.exists(localManifest)) {
+                let f = File.open(localManifest, "r");
+                let cRes = f.value.read();
+                f.value.close();
+                if (cRes.isOk) {
+                    let pkgManifest = Json.parse(cRes.value);
+                    if (Map.has(pkgManifest, "dependencies")) {
+                        installer.installDeps(pkgManifest["dependencies"], replaceMap, installedMap);
+                    }
+                }
+            }
+            return true;
+        } else {
+            print("Error: Could not copy local package from " + localPath);
+            return false;
+        }
+    }
+}

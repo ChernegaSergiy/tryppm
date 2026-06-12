@@ -48,7 +48,7 @@ class TrypPM {
     }
     
     fn printUsage() {
-        print("Trypillia Package Manager (TrypPM) v0.4.0\n");
+        print("Trypillia Package Manager (TrypPM) v0.5.0\n");
         print("Usage:");
         print("  tryppm init                          - Initialize a new tryp.json manifest");
         print("  tryppm install                       - Install dependencies from tryp.json");

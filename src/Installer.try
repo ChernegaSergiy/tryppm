@@ -211,7 +211,7 @@ class Installer {
             }
             return true;
         } else {
-            print("Error: Could not copy local package from " + sourceFile);
+            print("Error: Could not copy local package from " + localPath);
             return false;
         }
     }

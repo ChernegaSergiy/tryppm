@@ -4,6 +4,10 @@ load "Installer.try";
 load "Upgrader.try";
 load "Initializer.try";
 
+use TrypPM.Core.Installer;
+use TrypPM.Core.Upgrader;
+use TrypPM.Core.Initializer;
+
 class TrypPM {
     fn run(args) {
         if (List.length(args) < 1) {

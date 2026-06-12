@@ -132,34 +132,31 @@ class Installer {
         }
         
         let folderName = pathParts[1];
-        let url = "https://raw.githubusercontent.com/" + repoPath + "/" + branch + "/main.try";
-        print("Fetching from: " + url + " ...");
+        OS.exec("mkdir -p tryp_modules");
+        let targetDir = "tryp_modules/" + folderName;
+        // Remove target dir if it exists
+        OS.exec("rm -rf " + targetDir);
         
-        let response = Http.get(url);
-        if (response.isOk) {
-            OS.exec("mkdir -p tryp_modules");
+        let cloneUrl = "https://github.com/" + repoPath + ".git";
+        print("Cloning from: " + cloneUrl + " (branch: " + branch + ") ...");
+        
+        let res = OS.exec("git clone --depth 1 --branch " + branch + " " + cloneUrl + " " + targetDir);
+        if (res.isOk) {
+            print("Successfully installed " + folderName + "!");
             
-            let targetPath = "tryp_modules/" + folderName + ".try";
-            let file = File.open(targetPath, "w");
-            
-            if (file.isOk) {
-                file.value.write(response.value);
-                file.value.close();
-                print("Successfully installed " + folderName + "!");
-                
-                let manifestUrl = "https://raw.githubusercontent.com/" + repoPath + "/" + branch + "/tryp.json";
-                let manifestRes = Http.get(manifestUrl);
-                if (manifestRes.isOk && manifestRes.value != "404: Not Found") {
-                    let pkgManifest = Json.parse(manifestRes.value);
+            let localManifest = targetDir + "/tryp.json";
+            if (File.exists(localManifest)) {
+                let f = File.open(localManifest, "r");
+                let cRes = f.value.read();
+                f.value.close();
+                if (cRes.isOk) {
+                    let pkgManifest = Json.parse(cRes.value);
                     if (Map.has(pkgManifest, "dependencies")) {
                         this.installDeps(pkgManifest["dependencies"], replaceMap, installedMap);
                     }
                 }
-                return true;
-            } else {
-                print("Failed to save file.");
-                return false;
             }
+            return true;
         } else {
             print("Failed to download package. Check repository URL or your network connection.");
             return false;
@@ -194,11 +191,9 @@ class Installer {
         if (List.length(pathParts) < 2) { return false; }
         
         let folderName = pathParts[1];
-        let sourceFile = localPath + "/main.try";
-        
-        print("Copying from local path: " + sourceFile + " ...");
+        print("Copying from local path: " + localPath + " ...");
         OS.exec("mkdir -p tryp_modules");
-        let res = OS.exec("cp " + sourceFile + " tryp_modules/" + folderName + ".try");
+        let res = OS.exec("cp -r " + localPath + " tryp_modules/" + folderName);
         if (res.isOk) {
             print("Successfully installed " + folderName + " from local path!");
             
@@ -311,7 +306,7 @@ class Installer {
                 let pathParts = String.split(repoPath, "/");
                 if (List.length(pathParts) > 1) {
                     let folderName = pathParts[1];
-                    content = content + "load \"tryp_modules/" + folderName + ".try\";\n";
+                    content = content + "load \"tryp_modules/" + folderName + "/main.try\";\n";
                 }
             }
         }

@@ -1,0 +1,30 @@
+name: Build TrypPM
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Trypillia
+        uses: ChernegaSergiy/setup-trypillia@v1
+        with:
+          version: 'latest'
+
+      - name: Build TrypPM binary
+        run: trypillia build main.try tryppm
+
+      - name: Upload Binary Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tryppm-linux-amd64
+          path: tryppm
+          retention-days: 7

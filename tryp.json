@@ -1,9 +1,8 @@
 {
-  "dependencies": {
-    "github:ChernegaSergiy/pkgA": "1.0.0",
-    "github:ChernegaSergiy/minute-of-silence": "0.10.4"
-  },
-  "replace": {
-    "github:ChernegaSergiy/pkgA": "../pkgA"
-  }
+  "name": "tryppm",
+  "version": "0.3.0",
+  "description": "The official package manager for the Trypillia language.",
+  "author": "Serhii Cherneha",
+  "entry": "main.try",
+  "dependencies": {}
 }

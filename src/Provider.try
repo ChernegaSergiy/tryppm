@@ -1,0 +1,26 @@
+namespace TrypPM.Core;
+
+// Abstract base class simulating an Interface in Trypillia.
+// All custom package providers (GitHub, Local, etc.) should implement these methods.
+class Provider {
+    
+    // Checks if this provider can handle the given dependency string (e.g., "github:User/Repo")
+    fn supports(pkgStr) {
+        print("Error: supports() not implemented in abstract Provider");
+        return false;
+    }
+
+    // Resolves the requested version into a concrete version/branch/hash
+    fn resolveVersion(pkgStr, requestedVersion) {
+        print("Error: resolveVersion() not implemented in abstract Provider");
+        return requestedVersion;
+    }
+
+    // Fetches the package and installs it into the target directory.
+    // Must return true on success, false on failure.
+    // 'installer' is passed to allow the provider to recursively install nested dependencies via installer.installDeps()
+    fn install(pkgStr, version, targetDir, replaceMap, installedMap, installer) {
+        print("Error: install() not implemented in abstract Provider");
+        return false;
+    }
+}

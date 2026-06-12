@@ -178,15 +178,13 @@ class Installer {
             
             let keyParts = String.split(key, ":");
             if (List.length(keyParts) > 1 && keyParts[0] == "github") {
-                // Format: "github:User/Repo": "v1.0.0"
                 if (val == "latest" || val == "*") {
                     this.installPackage(key);
                 } else {
                     this.installPackage(key + "@" + val);
                 }
             } else {
-                // Legacy format: "tryp-logger": "github:User/Repo@v1.0.0"
-                this.installPackage(val);
+                print("Error: Unsupported dependency format '" + key + "'. Use 'github:User/Repo': 'version'.");
             }
         }
         print("\nAll dependencies installed!");

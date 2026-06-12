@@ -104,7 +104,20 @@ class Installer {
             branch = versionParts[1];
         }
         
+        let basePkg = "github:" + repoPath;
         branch = this.resolveVersion(repoPath, branch);
+
+        if (Map.has(installedMap, basePkg)) {
+            let existingVersion = installedMap[basePkg];
+            if (existingVersion != branch) {
+                print("Error: Version conflict for " + basePkg + "!");
+                print("Already resolved: " + existingVersion);
+                print("Requested now: " + branch);
+                OS.exit(1);
+            }
+            return true;
+        }
+        Map.set(installedMap, basePkg, branch);
 
         let pathParts = String.split(repoPath, "/");
         if (List.length(pathParts) < 2) {
@@ -153,6 +166,23 @@ class Installer {
         if (List.length(parts) < 2) { return false; }
         
         let repoPath = parts[1];
+        let versionParts = String.split(repoPath, "@");
+        if (List.length(versionParts) > 1) {
+            repoPath = versionParts[0];
+        }
+        let basePkg = "github:" + repoPath;
+
+        if (Map.has(installedMap, basePkg)) {
+            let existingVersion = installedMap[basePkg];
+            if (existingVersion != "LOCAL") {
+                print("Error: Version conflict for " + basePkg + "!");
+                print("Already resolved: " + existingVersion);
+                print("Requested now: LOCAL OVERRIDE");
+                OS.exit(1);
+            }
+            return true;
+        }
+        Map.set(installedMap, basePkg, "LOCAL");
         let pathParts = String.split(repoPath, "/");
         if (List.length(pathParts) < 2) { return false; }
         
@@ -194,19 +224,15 @@ class Installer {
             
             let keyParts = String.split(key, ":");
             if (List.length(keyParts) > 1 && keyParts[0] == "github") {
-                if (!Map.has(installedMap, key)) {
-                    Map.set(installedMap, key, true);
-                    
-                    let pkgStr = key;
-                    if (val != "latest" && val != "*") {
-                        pkgStr = key + "@" + val;
-                    }
-                    
-                    if (Map.has(replaceMap, key)) {
-                        this.installLocalPackage(pkgStr, replaceMap[key], replaceMap, installedMap);
-                    } else {
-                        this._installPackage(pkgStr, replaceMap, installedMap);
-                    }
+                let pkgStr = key;
+                if (val != "latest" && val != "*") {
+                    pkgStr = key + "@" + val;
+                }
+                
+                if (Map.has(replaceMap, key)) {
+                    this.installLocalPackage(pkgStr, replaceMap[key], replaceMap, installedMap);
+                } else {
+                    this._installPackage(pkgStr, replaceMap, installedMap);
                 }
             } else {
                 print("Error: Unsupported dependency format '" + key + "'. Use 'github:User/Repo': 'version'.");

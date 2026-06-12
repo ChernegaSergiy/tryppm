@@ -2,15 +2,18 @@ namespace TrypPM.Core;
 
 load "Provider.try";
 load "GitHubProvider.try";
+load "GitLabProvider.try";
 load "LocalProvider.try";
 
 use TrypPM.Providers.GitHubProvider;
+use TrypPM.Providers.GitLabProvider;
 use TrypPM.Providers.LocalProvider;
 
 class Installer {
     fn getProviders() {
         return [
             GitHubProvider(),
+            GitLabProvider(),
             LocalProvider()
         ];
     }
@@ -154,7 +157,7 @@ class Installer {
             let key = keys[i];
             let parts = String.split(key, ":");
             if (List.length(parts) > 1) {
-                if (parts[0] == "github") {
+                if (parts[0] == "github" || parts[0] == "gitlab") {
                     let repoPath = parts[1];
                     let pathParts = String.split(repoPath, "/");
                     if (List.length(pathParts) > 1) {

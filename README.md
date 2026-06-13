@@ -15,7 +15,7 @@
 
 </div>
 
-TrypPM handles dependencies, project initialization, and core language upgrades seamlessly. It parses dependencies defined in a `tryp.json` manifest and automatically installs them locally into a `tryp_modules` directory directly from GitHub.
+**TrypPM** handles dependencies, project initialization, and core language upgrades seamlessly. It parses dependencies defined in a `tryp.json` manifest and automatically installs them locally into a `tryp_modules` directory directly from GitHub.
 
 ## Commands
 

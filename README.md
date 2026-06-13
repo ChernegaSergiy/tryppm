@@ -19,12 +19,12 @@
 
 ## Features
  
-- **Project Initialization**: Generates a `tryp.json` manifest with pretty-printing via `tryppm init`.
-- **Dependency Installation**: Resolves and installs all packages listed in `tryp.json` automatically.
-- **Single Package Install**: Install any GitHub-hosted package with optional version constraints (`@latest`, `@^1.0.0`, `@v2.1.0`).
-- **Package Removal**: Uninstalls a package, removes its files, and updates the autoloader cleanly.
-- **Compiler Upgrade**: Upgrades the Trypillia compiler from source natively via `tryppm upgrade`.
-- **Semantic Versioning**: Automatically resolves SemVer constraints against GitHub tags.
+- **Project Initialization**: Automatically generates a beautifully formatted `tryp.json` manifest to jumpstart your projects.
+- **Seamless Dependency Management**: Effortlessly resolves, downloads, and installs packages directly from GitHub into your local workspace.
+- **Flexible Versioning**: Provides native Semantic Versioning (SemVer) support, intelligently resolving complex version constraints (like `@^1.0.0` or `@latest`) against GitHub release tags.
+- **Clean Uninstalls**: Safely removes packages, purges unneeded files, and keeps your project's autoloader perfectly synchronized.
+- **Native Compiler Upgrades**: Keep your toolchain up-to-date by downloading and compiling the newest Trypillia compiler directly from source.
+- **Zero-Configuration**: Designed to work out of the box with zero boilerplate or complex setup steps.
 
 ## Commands
  

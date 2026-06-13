@@ -9,7 +9,7 @@
 [![Build TrypPM](https://github.com/ChernegaSergiy/tryppm/actions/workflows/build.yml/badge.svg)](https://github.com/ChernegaSergiy/tryppm/actions/workflows/build.yml)
 [![License: CSSM Unlimited License v2.0](https://img.shields.io/badge/License-CSSM%20Unlimited%20License%20v2.0-blue.svg?logo=opensourceinitiative)](LICENSE)
 
-[Features](#features) · [Commands](#commands) · [Project Manifest](#project-manifest) · [Example Output](#example-output) · [Contributing](#contributing)
+[Commands](#commands) · [Project Manifest](#project-manifest) · [Example Output](#example-output) · [Contributing](#contributing)
 
 ---
 

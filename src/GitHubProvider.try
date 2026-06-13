@@ -12,7 +12,7 @@ class GitHubProvider implements SemverTrait {
         let repoPath = parts[1];
         
         if (requestedVersion == "latest" || requestedVersion == "*") {
-            let res = OS.exec("curl -s -A 'TrypPM' https://api.github.com/repos/" + repoPath + "/releases/latest");
+            let res = Http.get("https://api.github.com/repos/" + repoPath + "/releases/latest");
             if (res.isOk && res.value != "") {
                 let json = Json.parse(res.value);
                 if (Map.has(json, "tag_name")) { return json["tag_name"]; }
@@ -21,7 +21,7 @@ class GitHubProvider implements SemverTrait {
         }
         
         if (String.startsWith(requestedVersion, "^") || String.startsWith(requestedVersion, "~")) {
-            let res = OS.exec("curl -s -A 'TrypPM' https://api.github.com/repos/" + repoPath + "/tags");
+            let res = Http.get("https://api.github.com/repos/" + repoPath + "/tags");
             if (res.isOk && res.value != "") {
                 let tags = Json.parse(res.value);
                 let bestTag = "";

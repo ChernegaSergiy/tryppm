@@ -12,7 +12,7 @@ class BitbucketProvider implements SemverTrait {
         let repoPath = parts[1];
         
         if (requestedVersion == "latest" || requestedVersion == "*") {
-            let res = OS.exec("curl -s -A 'TrypPM' https://api.bitbucket.org/2.0/repositories/" + repoPath + "/refs/tags?sort=-target.date");
+            let res = Http.get("https://api.bitbucket.org/2.0/repositories/" + repoPath + "/refs/tags?sort=-target.date");
             if (res.isOk && res.value != "") {
                 let json = Json.parse(res.value);
                 if (Map.has(json, "values")) {
@@ -27,7 +27,7 @@ class BitbucketProvider implements SemverTrait {
         }
         
         if (String.startsWith(requestedVersion, "^") || String.startsWith(requestedVersion, "~")) {
-            let res = OS.exec("curl -s -A 'TrypPM' https://api.bitbucket.org/2.0/repositories/" + repoPath + "/refs/tags");
+            let res = Http.get("https://api.bitbucket.org/2.0/repositories/" + repoPath + "/refs/tags");
             if (res.isOk && res.value != "") {
                 let json = Json.parse(res.value);
                 if (Map.has(json, "values")) {

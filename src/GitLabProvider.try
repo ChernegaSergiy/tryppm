@@ -16,7 +16,7 @@ class GitLabProvider implements SemverTrait {
         let encodedPath = pathParts[0] + "%2F" + pathParts[1];
         
         if (requestedVersion == "latest" || requestedVersion == "*") {
-            let res = OS.exec("curl -s -A 'TrypPM' https://gitlab.com/api/v4/projects/" + encodedPath + "/releases");
+            let res = Http.get("https://gitlab.com/api/v4/projects/" + encodedPath + "/releases");
             if (res.isOk && res.value != "") {
                 let json = Json.parse(res.value);
                 if (List.length(json) > 0) {
@@ -28,7 +28,7 @@ class GitLabProvider implements SemverTrait {
         }
         
         if (String.startsWith(requestedVersion, "^") || String.startsWith(requestedVersion, "~")) {
-            let res = OS.exec("curl -s -A 'TrypPM' https://gitlab.com/api/v4/projects/" + encodedPath + "/repository/tags");
+            let res = Http.get("https://gitlab.com/api/v4/projects/" + encodedPath + "/repository/tags");
             if (res.isOk && res.value != "") {
                 let tags = Json.parse(res.value);
                 let bestTag = "";

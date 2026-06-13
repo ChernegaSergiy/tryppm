@@ -9,6 +9,7 @@ The official Package Manager for the Trypillia language. TrypPM handles dependen
 - `tryppm init` — Automatically generate a `tryp.json` manifest file with pretty-printing.
 - `tryppm install` — Parse the current directory's `tryp.json` and install all listed dependencies.
 - `tryppm install github:<User>/<Repo>[@version]` — Install a single package from a GitHub repository (supports versions like @latest, @^1.0.0, @v2.1.0).
+- `tryppm uninstall <pkg>` — Remove a package from `tryp.json`, delete its files, and update the autoloader.
 - `tryppm upgrade` — Upgrade the Trypillia language compiler from source natively.
 
 ## Project Manifest
